@@ -18,6 +18,8 @@ import AnalysisDetail from './components/analyzer/AnalysisDetail.jsx';
 import Compare from './components/pro/Compare.jsx';
 import Storyboard from './components/pro/Storyboard.jsx';
 import Notifications from './components/notifications/Notifications.jsx';
+import CreateChallenge from './components/admin/CreateChallenge';
+import AdminChallenges from './components/admin/AdminChallenges';
 import AuthModal from './components/auth/AuthModal.jsx';
 
 function ProtectedRoute({ children }) {
@@ -52,6 +54,22 @@ function AppInner() {
   element={<FollowList/>}
 />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+        <Route
+  path="/admin/challenges/create"
+  element={
+    <ProtectedRoute>
+      <CreateChallenge />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/challenges"
+  element={
+    <ProtectedRoute>
+      <AdminChallenges />
+    </ProtectedRoute>
+  }
+/>
         <Route
   path="/settings"
   element={

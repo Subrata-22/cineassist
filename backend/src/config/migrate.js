@@ -157,6 +157,20 @@ await query(`
     );
   `);
 
+  // Notifications
+await query(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    actor_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    analysis_id UUID REFERENCES analyses(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+`);
+
   // Indexes for performance
   await query(`CREATE INDEX IF NOT EXISTS idx_analyses_user_id ON analyses(user_id);`);
   await query(`CREATE INDEX IF NOT EXISTS idx_analyses_public ON analyses(is_public, created_at DESC);`);

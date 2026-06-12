@@ -11,6 +11,19 @@ function ChallengeCard({ challenge, onClick }) {
 
   return (
     <div className="challenge-card" onClick={onClick}>
+      <div className="challenge-card-banner">
+  {challenge.banner_url ? (
+    <img
+      src={challenge.banner_url}
+      alt={challenge.title}
+      className="challenge-banner-image"
+    />
+  ) : (
+    <div className="challenge-banner-placeholder">
+      🎯
+    </div>
+  )}
+</div>
       <div className="challenge-card-top">
         <span className="challenge-theme">{challenge.theme || 'Open'}</span>
         <span className={`challenge-days${daysLeft < 3 ? ' urgent' : ''}`}>{daysLeft}d left</span>

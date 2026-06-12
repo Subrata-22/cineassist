@@ -43,6 +43,18 @@ export const apiUpdateProfile = (body) =>
   }).then(handle);
 };
 
+export const apiUploadChallengeBanner = (formData) => {
+  const token = localStorage.getItem('ca_token');
+
+  return fetch(`${BASE}/challenges/banner`, {
+    method: 'POST',
+    headers: token
+      ? { Authorization: `Bearer ${token}` }
+      : {},
+    body: formData,
+  }).then(handle);
+};
+
 export const apiDeleteAccount = () =>
   fetch(`${BASE}/auth/account`, {
     method: 'DELETE',
@@ -152,6 +164,11 @@ export const apiGetFollowingFeed = (params = {}) => {
   return fetch(`${BASE}/social/feed?${q}`, { headers: getHeaders() }).then(handle);
 };
 
+export const apiGetAllChallengesAdmin = () =>
+  fetch(`${BASE}/admin/challenges`, {
+    headers: getHeaders(),
+  }).then(handle);
+
  export const apiGetNotifications = () =>
   fetch(`${BASE}/notifications`, {
     headers: getHeaders(),
@@ -167,10 +184,23 @@ export const apiMarkNotificationsRead = () =>
 export const apiGetChallenges = () =>
   fetch(`${BASE}/challenges`, { headers: getHeaders() }).then(handle);
 
+export const apiDeleteChallenge = (id) =>
+  fetch(`${BASE}/challenges/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  }).then(handle);
+
 export const apiGetChallenge = (id, params = {}) => {
   const q = new URLSearchParams(params).toString();
   return fetch(`${BASE}/challenges/${id}?${q}`, { headers: getHeaders() }).then(handle);
 };
+
+export const apiCreateChallenge = (body) =>
+  fetch(`${BASE}/challenges`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(body),
+  }).then(handle);
 
 export const apiSubmitChallenge = (challengeId, body) =>
   fetch(`${BASE}/challenges/${challengeId}/submit`, {

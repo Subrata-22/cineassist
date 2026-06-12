@@ -66,7 +66,26 @@ router.post(
 
 // ── Challenges ─────────────────────────────────────────
 router.get('/challenges', optionalAuth, challenge.getChallenges);
+router.get(
+  '/admin/challenges',
+  authenticate,
+  requireAdmin,
+  challenge.getAllChallengesAdmin
+);
 router.post('/challenges', authenticate, requireAdmin, challenge.createChallenge);
+router.delete(
+  '/challenges/:id',
+  authenticate,
+  requireAdmin,
+  challenge.deleteChallenge
+);
+router.post(
+  '/challenges/banner',
+  authenticate,
+  requireAdmin,
+  upload.single('banner'),
+  challenge.uploadChallengeBanner
+);
 router.get('/challenges/:id', optionalAuth, challenge.getChallenge);
 router.post('/challenges/:id/submit', authenticate, challenge.submitToChallenge);
 router.post('/challenge-submissions/:submissionId/vote', authenticate, challenge.voteSubmission);

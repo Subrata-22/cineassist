@@ -1,4 +1,5 @@
 import { query } from '../config/database.js';
+import { uploadImage } from '../config/cloudinary.js';
 
 export const getChallenges = async (req, res, next) => {
   try {
@@ -15,6 +16,25 @@ export const getChallenges = async (req, res, next) => {
     );
     res.json(result.rows);
   } catch (err) { next(err); }
+};
+
+export const getAllChallengesAdmin = async (req, res, next) => {
+  try {
+    const result = await query(`
+      SELECT
+        c.*,
+        COUNT(cs.id) AS submission_count
+      FROM challenges c
+      LEFT JOIN challenge_submissions cs
+        ON cs.challenge_id = c.id
+      GROUP BY c.id
+      ORDER BY c.created_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getChallenge = async (req, res, next) => {
@@ -121,15 +141,91 @@ if (submission.rows[0].user_id === req.user.id) {
 // Admin: create challenge
 export const createChallenge = async (req, res, next) => {
   try {
-    const { title, description, theme, focus_module, start_date, end_date } = req.body;
+    const {
+  title,
+  description,
+  theme,
+  focus_module,
+  banner_url,
+  start_date,
+  end_date
+} = req.body;
     if (!title || !description || !start_date || !end_date) {
       return res.status(400).json({ error: 'title, description, start_date, end_date required' });
     }
-    const result = await query(
-      `INSERT INTO challenges (title, description, theme, focus_module, start_date, end_date, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [title, description, theme, focus_module, start_date, end_date, req.user.id]
-    );
+   const result = await query(
+  `
+  INSERT INTO challenges (
+    title,
+    description,
+    theme,
+    focus_module,
+    banner_url,
+    start_date,
+    end_date,
+    created_by
+  )
+  VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
+  )
+  RETURNING *
+  `,
+  [
+    title,
+    description,
+    theme,
+    focus_module,
+    banner_url,
+    start_date,
+    end_date,
+    req.user.id
+  ]
+);
     res.status(201).json(result.rows[0]);
   } catch (err) { next(err); }
+};
+export const uploadChallengeBanner = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: 'No image uploaded'
+      });
+    }
+
+    const result = await uploadImage(
+      req.file.buffer,
+      {
+        folder: 'cineassist/challenge-banners'
+      }
+    );
+
+    res.json({
+      banner_url: result.secure_url
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+export const deleteChallenge = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await query(
+      'DELETE FROM challenges WHERE id = $1',
+      [id]
+    );
+
+    res.json({
+      success: true
+    });
+  } catch (err) {
+    next(err);
+  }
 };

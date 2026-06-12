@@ -104,6 +104,15 @@ useEffect(() => {
   Dashboard
 </Link>
 
+{user?.role === 'admin' && (
+  <Link
+    to="/admin/challenges/create"
+    className="nav-dashboard-btn"
+  >
+    Admin
+  </Link>
+)}
+
     <Link
   to={`/user/${user.username}`}
   className="nav-avatar"
