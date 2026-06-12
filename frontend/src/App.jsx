@@ -1,0 +1,86 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './store/AuthContext.jsx';
+import { useState, useRef } from 'react';
+
+// Layout
+import Navbar from './components/layout/Navbar.jsx';
+import Footer from './components/layout/Footer.jsx';
+
+// Pages
+import HomePage from './components/layout/HomePage.jsx';
+import Dashboard from './components/dashboard/Dashboard.jsx';
+import Explore from './components/social/Explore.jsx';
+import UserProfile from './components/social/UserProfile.jsx';
+import FollowList from './components/social/FollowList.jsx';
+import EditProfile from './components/social/EditProfile.jsx';
+import Challenges from './components/social/Challenges.jsx';
+import AnalysisDetail from './components/analyzer/AnalysisDetail.jsx';
+import Compare from './components/pro/Compare.jsx';
+import Storyboard from './components/pro/Storyboard.jsx';
+import Notifications from './components/notifications/Notifications.jsx';
+import AuthModal from './components/auth/AuthModal.jsx';
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><div className="spinner"/></div>;
+  if (!user) return (
+    <>
+      <Navigate to="/" replace/>
+      <AuthModal onClose={() => {}}/>
+    </>
+  );
+  return children;
+}
+
+function AppInner() {
+  const [showAuth, setShowAuth] = useState(false);
+  const fileInputRef = useRef(null);
+
+  return (
+    <BrowserRouter>
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)}/>}
+      <Navbar onAuthClick={() => setShowAuth(true)} fileInputRef={fileInputRef}/>
+      <Routes>
+        <Route path="/" element={<HomePage onAuthClick={() => setShowAuth(true)} fileInputRef={fileInputRef}/>}/>
+        <Route path="/explore" element={<Explore/>}/>
+        <Route path="/challenges" element={<Challenges/>}/>
+        <Route path="/analysis/:id" element={<AnalysisDetail/>}/>
+        <Route path="/user/:username" element={<UserProfile/>}/>
+        <Route
+  path="/user/:username/:type"
+  element={<FollowList/>}
+/>
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+        <Route
+  path="/settings"
+  element={
+    <ProtectedRoute>
+      <EditProfile />
+    </ProtectedRoute>
+  }
+/>
+        <Route
+  path="/notifications"
+  element={
+    <ProtectedRoute>
+      <Notifications/>
+    </ProtectedRoute>
+  }
+/>
+        <Route path="/compare" element={<ProtectedRoute><Compare/></ProtectedRoute>}/>
+        <Route path="/storyboard" element={<ProtectedRoute><Storyboard/></ProtectedRoute>}/>
+        <Route path="*" element={<Navigate to="/" replace/>}/>
+      </Routes>
+      <Footer/>
+    </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner/>
+    </AuthProvider>
+  );
+}

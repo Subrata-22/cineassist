@@ -1,0 +1,66 @@
+.canvas-preview-section { display: flex; flex-direction: column; gap: 16px; }
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  background: var(--bg-void);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  transition: height 0.3s var(--ease-out);
+}
+
+.preview-canvas,
+.overlay-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  display: block;
+  max-width: 100%;
+}
+
+.overlay-canvas { pointer-events: none; }
+
+.canvas-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.overlay-toggles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.overlay-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.overlay-toggle:hover {
+  border-color: var(--border-mid);
+  color: var(--text-primary);
+}
+
+.overlay-toggle.active {
+  background: var(--accent-primary-dim);
+  border-color: rgba(232,184,75,0.3);
+  color: var(--accent-primary);
+}
+
+.new-image-btn {
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}

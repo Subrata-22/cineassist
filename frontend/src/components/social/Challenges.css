@@ -1,0 +1,41 @@
+.challenges-page { padding: 120px 0 80px; min-height: 100vh; }
+.ch-loading { display: flex; justify-content: center; padding: 80px; }
+.ch-header { margin-bottom: 36px; }
+.ch-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--text-bright); letter-spacing: -0.04em; margin-bottom: 8px; }
+.ch-sub { font-size: 0.95rem; color: var(--text-secondary); max-width: 540px; line-height: 1.6; }
+.ch-empty { color: var(--text-muted); text-align: center; padding: 60px; }
+.ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.challenge-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 28px; cursor: pointer; transition: border-color 0.3s, transform 0.3s; }
+.challenge-card:hover { border-color: var(--border-mid); transform: translateY(-3px); }
+.challenge-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.challenge-theme { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-primary); background: var(--accent-primary-dim); border: 1px solid rgba(232,184,75,0.15); padding: 4px 10px; border-radius: 2px; }
+.challenge-days { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); }
+.challenge-days.urgent { color: var(--accent-red); }
+.challenge-card-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text-bright); letter-spacing: -0.03em; margin-bottom: 10px; }
+.challenge-card-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 16px; }
+.challenge-card-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.challenge-focus { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); }
+.challenge-subs { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted); margin-left: auto; }
+.challenge-submitted { font-family: var(--font-mono); font-size: 0.62rem; color: var(--accent-secondary); }
+.ch-back { background: none; border: none; font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); cursor: pointer; padding: 0; margin-bottom: 24px; transition: color 0.2s; }
+.ch-back:hover { color: var(--accent-primary); }
+.ch-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+.ch-submit-form { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 12px; }
+.ch-form-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text-bright); }
+.ch-select { background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem; outline: none; }
+.ch-submissions-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-bright); margin-bottom: 20px; letter-spacing: -0.03em; }
+.ch-submissions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.ch-sub-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; position: relative; transition: border-color 0.2s; }
+.ch-sub-card:hover { border-color: var(--border-mid); }
+.ch-sub-card--top { border-color: rgba(232,184,75,0.2); }
+.ch-medal { position: absolute; top: 10px; left: 10px; z-index: 2; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; color: var(--accent-primary); background: rgba(6,8,12,0.85); padding: 3px 8px; border-radius: 3px; backdrop-filter: blur(4px); }
+.ch-sub-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
+.ch-sub-body { padding: 12px; }
+.ch-sub-user { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.ch-sub-score { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; color: var(--accent-primary); margin-left: auto; }
+.ch-sub-note { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+.ch-vote-btn { background: none; border: 1px solid var(--border-subtle); border-radius: 3px; padding: 5px 12px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+.ch-vote-btn:hover:not(:disabled) { color: var(--accent-red); border-color: rgba(251,113,133,0.3); }
+.ch-vote-btn.voted { color: var(--accent-red); border-color: rgba(251,113,133,0.3); }
+.ch-vote-btn:disabled { cursor: default; }
+@media (max-width: 640px) { .ch-grid { grid-template-columns: 1fr; } .ch-submissions-grid { grid-template-columns: 1fr 1fr; } }

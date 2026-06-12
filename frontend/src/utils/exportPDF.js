@@ -1,0 +1,156 @@
+/**
+ * Exports an analysis as a styled PDF report
+ */
+export async function exportAnalysisPDF(analysis) {
+  const { jsPDF } = await import('jspdf');
+  const modules = Array.isArray(analysis.modules)
+    ? analysis.modules
+    : JSON.parse(analysis.modules || '[]');
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 20;
+  let y = 20;
+
+  // ── Header ──────────────────────────────────────────
+  doc.setFillColor(6, 8, 12);
+  doc.rect(0, 0, W, 40, 'F');
+
+  doc.setTextColor(232, 184, 75);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('CineAssist', M, 18);
+
+  doc.setTextColor(200, 205, 216);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Shot Composition Analysis Report', M, 26);
+  doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), W - M, 26, { align: 'right' });
+
+  y = 52;
+
+  // ── Title + meta ─────────────────────────────────────
+  doc.setTextColor(240, 242, 247);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text(analysis.title || 'Untitled Shot', M, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  const metaParts = [analysis.verdict, analysis.genre, analysis.mood].filter(Boolean);
+  doc.text(metaParts.join('  ·  '), M, y);
+  y += 12;
+
+  // ── Overall score ────────────────────────────────────
+  doc.setFillColor(20, 25, 34);
+  doc.roundedRect(M, y, W - 2 * M, 22, 3, 3, 'F');
+  doc.setTextColor(232, 184, 75);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(28);
+  doc.text(String(analysis.overall_score), M + 8, y + 15);
+  doc.setTextColor(200, 205, 216);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('/ 100   Overall Composition Score', M + 24, y + 15);
+  y += 32;
+
+  // ── AI feedback ──────────────────────────────────────
+  if (analysis.ai_feedback) {
+    doc.setFillColor(14, 18, 25);
+    doc.roundedRect(M, y, W - 2 * M, 2, 2, 2, 'F');
+    y += 6;
+    doc.setTextColor(45, 212, 168);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('CLAUDE VISION ANALYSIS', M, y);
+    y += 6;
+    doc.setTextColor(200, 205, 216);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    const lines = doc.splitTextToSize(analysis.ai_feedback, W - 2 * M);
+    doc.text(lines, M, y);
+    y += lines.length * 5 + 10;
+  }
+
+  // ── Module scores ─────────────────────────────────────
+  doc.setTextColor(200, 205, 216);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Module Scores', M, y);
+  y += 8;
+
+  for (const mod of modules) {
+    if (y > 260) { doc.addPage(); y = 20; }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(240, 242, 247);
+    doc.text(mod.name, M, y);
+
+    const scoreColor = mod.score >= 75 ? [45, 212, 168] : mod.score >= 50 ? [232, 184, 75] : [251, 113, 133];
+    doc.setTextColor(...scoreColor);
+    doc.text(`${mod.score}/100`, W - M, y, { align: 'right' });
+
+    // Bar background
+    const barX = M, barY = y + 2, barW = W - 2 * M, barH = 3;
+    doc.setFillColor(20, 25, 34);
+    doc.roundedRect(barX, barY, barW, barH, 1, 1, 'F');
+    doc.setFillColor(...scoreColor);
+    doc.roundedRect(barX, barY, barW * (mod.score / 100), barH, 1, 1, 'F');
+
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(107, 114, 128);
+    const feedbackLines = doc.splitTextToSize(mod.feedback, W - 2 * M);
+    doc.text(feedbackLines, M, y);
+    y += feedbackLines.length * 4 + 3;
+
+    doc.setTextColor(232, 184, 75);
+    doc.setFontSize(8);
+    const suggLines = doc.splitTextToSize(`→ ${mod.suggestion}`, W - 2 * M);
+    doc.text(suggLines, M, y);
+    y += suggLines.length * 4 + 8;
+
+    doc.setDrawColor(255, 255, 255, 0.05);
+    doc.line(M, y - 3, W - M, y - 3);
+  }
+
+  // ── AI suggestions ───────────────────────────────────
+  if (analysis.ai_suggestions?.length > 0) {
+    if (y > 240) { doc.addPage(); y = 20; }
+    y += 4;
+    doc.setTextColor(200, 205, 216);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Improvement Suggestions', M, y);
+    y += 8;
+    analysis.ai_suggestions.forEach((s, i) => {
+      doc.setTextColor(232, 184, 75);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(`${i + 1}.`, M, y);
+      doc.setTextColor(200, 205, 216);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(s, W - 2 * M - 6);
+      doc.text(lines, M + 6, y);
+      y += lines.length * 5 + 4;
+    });
+  }
+
+  // ── Footer ───────────────────────────────────────────
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(6, 8, 12);
+    doc.rect(0, 285, W, 12, 'F');
+    doc.setTextColor(61, 68, 81);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Generated by CineAssist — cineassist.app', M, 292);
+    doc.text(`Page ${i} of ${pageCount}`, W - M, 292, { align: 'right' });
+  }
+
+  doc.save(`cineassist-${(analysis.title || 'analysis').replace(/\s+/g, '-').toLowerCase()}.pdf`);
+}

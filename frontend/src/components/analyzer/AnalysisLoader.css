@@ -1,0 +1,88 @@
+.analysis-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 40px;
+  gap: 16px;
+  animation: fadeIn 0.5s ease both;
+}
+
+.loader-spinner {
+  position: relative;
+  width: 80px; height: 80px;
+  margin-bottom: 8px;
+}
+
+.loader-icon {
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  color: var(--accent-primary);
+}
+
+.loader-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.03em;
+}
+
+.loader-sub {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.loader-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 220px;
+}
+
+.loader-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.35;
+  transition: opacity 0.4s;
+}
+
+.loader-step.active { opacity: 1; }
+.loader-step.done { opacity: 0.6; }
+
+.step-indicator {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent-secondary);
+}
+
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border-mid);
+  display: block;
+}
+
+.step-dot-pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  display: block;
+  animation: dotPulse 1s ease-in-out infinite;
+  box-shadow: 0 0 10px var(--accent-primary-glow);
+}
+
+.step-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+}
+
+.loader-step.active .step-label { color: var(--accent-primary); }
+.loader-step.done .step-label { color: var(--accent-secondary); }
