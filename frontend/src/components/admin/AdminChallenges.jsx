@@ -41,6 +41,11 @@ export default function AdminChallenges() {
     }
   };
 
+const handleEdit = (challenge) => {
+  window.location.href =
+    `/admin/challenges/edit/${challenge.id}`;
+};
+
   if (loading) {
     return <div style={{ paddingTop: 120 }}>Loading...</div>;
   }
@@ -84,6 +89,21 @@ export default function AdminChallenges() {
                 ? '🟢 Active'
                 : '🔴 Ended'}
             </p>
+
+            <button
+  onClick={() => handleEdit(challenge)}
+  style={{
+    background: '#2563eb',
+    color: 'white',
+    border: 'none',
+    padding: '10px 18px',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    marginRight: '10px'
+  }}
+>
+  Edit Challenge
+</button>
 
             <button
               onClick={() =>

@@ -6,10 +6,17 @@ export const getChallenges = async (req, res, next) => {
     const result = await query(
       `SELECT c.*,
          COUNT(DISTINCT cs.id) AS submission_count,
+         CASE
+         WHEN c.end_date < NOW()
+         THEN true
+         ELSE false
+       END AS is_ended,
+
          EXISTS(SELECT 1 FROM challenge_submissions WHERE challenge_id = c.id AND user_id = $1) AS has_submitted
        FROM challenges c
        LEFT JOIN challenge_submissions cs ON cs.challenge_id = c.id
        WHERE c.is_active = true
+OR c.end_date < NOW()
        GROUP BY c.id
        ORDER BY c.end_date ASC`,
       [req.user?.id || null]
@@ -104,9 +111,73 @@ export const submitToChallenge = async (req, res, next) => {
   }
 };
 
+export const deleteSubmission = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { submissionId } = req.params;
+
+    const submission = await query(
+      `
+      SELECT *
+      FROM challenge_submissions
+      WHERE id = $1
+      `,
+      [submissionId]
+    );
+
+    if (!submission.rows[0]) {
+      return res.status(404).json({
+        error: 'Submission not found'
+      });
+    }
+
+    if (
+      submission.rows[0].user_id !== req.user.id
+    ) {
+      return res.status(403).json({
+        error: 'Not your submission'
+      });
+    }
+
+    await query(
+      `
+      DELETE FROM challenge_submissions
+      WHERE id = $1
+      `,
+      [submissionId]
+    );
+
+    res.json({
+      success: true
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const voteSubmission = async (req, res, next) => {
   try {
     const { submissionId } = req.params;
+    const challengeCheck = await query(`
+  SELECT c.end_date
+  FROM challenge_submissions cs
+  JOIN challenges c
+    ON c.id = cs.challenge_id
+  WHERE cs.id = $1
+`, [submissionId]);
+
+if (
+  challengeCheck.rows[0] &&
+  new Date(challengeCheck.rows[0].end_date) < new Date()
+) {
+  return res.status(400).json({
+    error: 'Voting has ended'
+  });
+}
     const submission = await query(
   'SELECT user_id FROM challenge_submissions WHERE id = $1',
   [submissionId]
@@ -213,6 +284,53 @@ export const uploadChallengeBanner = async (req, res, next) => {
     next(err);
   }
 };
+
+export const updateChallenge = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      title,
+      description,
+      theme,
+      focus_module,
+      banner_url,
+      start_date,
+      end_date
+    } = req.body;
+
+    const result = await query(
+      `
+      UPDATE challenges
+      SET
+        title = $1,
+        description = $2,
+        theme = $3,
+        focus_module = $4,
+        banner_url = $5,
+        start_date = $6,
+        end_date = $7
+      WHERE id = $8
+      RETURNING *
+      `,
+      [
+        title,
+        description,
+        theme,
+        focus_module,
+        banner_url,
+        start_date,
+        end_date,
+        id
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteChallenge = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -225,6 +343,41 @@ export const deleteChallenge = async (req, res, next) => {
     res.json({
       success: true
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getChallengeResults = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(
+      `
+      SELECT
+        cs.vote_count,
+        a.image_url,
+        a.title,
+        a.overall_score,
+        u.username
+      FROM challenge_submissions cs
+      JOIN analyses a
+        ON a.id = cs.analysis_id
+      JOIN users u
+        ON u.id = cs.user_id
+      WHERE cs.challenge_id = $1
+      ORDER BY cs.vote_count DESC
+      LIMIT 3
+      `,
+      [id]
+    );
+
+    res.json(result.rows);
+
   } catch (err) {
     next(err);
   }

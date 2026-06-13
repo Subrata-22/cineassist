@@ -69,3 +69,42 @@
     rgba(255, 255, 255, 0.05)
   );
 }
+.ch-tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.ch-tabs button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.ch-tabs button.active {
+  background: #e8b84b;
+  color: black;
+  font-weight: 600;
+}
+
+.challenge-results{
+  margin-bottom:40px;
+}
+
+.winner-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:16px;
+}
+
+.winner-card img{
+  width:100%;
+  max-width:400px;
+  border-radius:12px;
+  margin-top:10px;
+}

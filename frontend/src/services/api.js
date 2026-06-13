@@ -169,6 +169,14 @@ export const apiGetAllChallengesAdmin = () =>
     headers: getHeaders(),
   }).then(handle);
 
+  export const apiGetAnalytics = () =>
+  fetch(
+    `${BASE}/admin/analytics`,
+    {
+      headers: getHeaders()
+    }
+  ).then(handle);
+
  export const apiGetNotifications = () =>
   fetch(`${BASE}/notifications`, {
     headers: getHeaders(),
@@ -190,10 +198,23 @@ export const apiDeleteChallenge = (id) =>
     headers: getHeaders(),
   }).then(handle);
 
+  export const apiUpdateChallenge = (id, body) =>
+  fetch(`${BASE}/challenges/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(body),
+  }).then(handle);
+
 export const apiGetChallenge = (id, params = {}) => {
   const q = new URLSearchParams(params).toString();
   return fetch(`${BASE}/challenges/${id}?${q}`, { headers: getHeaders() }).then(handle);
 };
+
+export const apiGetChallengeResults = (id) =>
+  fetch(
+    `${BASE}/challenges/${id}/results`,
+    { headers: getHeaders() }
+  ).then(handle);
 
 export const apiCreateChallenge = (body) =>
   fetch(`${BASE}/challenges`, {
@@ -211,6 +232,17 @@ export const apiVoteSubmission = (submissionId) =>
   fetch(`${BASE}/challenge-submissions/${submissionId}/vote`, {
     method: 'POST', headers: getHeaders(),
   }).then(handle);
+
+  export const apiDeleteSubmission = (
+  submissionId
+) =>
+  fetch(
+    `${BASE}/challenge-submissions/${submissionId}`,
+    {
+      method: 'DELETE',
+      headers: getHeaders()
+    }
+  ).then(handle);
 
 // ── Sequences ─────────────────────────────────────────
 export const apiCreateSequence = (body) =>

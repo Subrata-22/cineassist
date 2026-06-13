@@ -20,6 +20,8 @@ import Storyboard from './components/pro/Storyboard.jsx';
 import Notifications from './components/notifications/Notifications.jsx';
 import CreateChallenge from './components/admin/CreateChallenge';
 import AdminChallenges from './components/admin/AdminChallenges';
+import EditChallenge from './components/admin/EditChallenge';
+import AdminAnalytics from './components/admin/AdminAnalytics';
 import AuthModal from './components/auth/AuthModal.jsx';
 
 function ProtectedRoute({ children }) {
@@ -67,6 +69,21 @@ function AppInner() {
   element={
     <ProtectedRoute>
       <AdminChallenges />
+    </ProtectedRoute>
+  }
+/><Route
+  path="/admin/analytics"
+  element={
+    <ProtectedRoute>
+      <AdminAnalytics />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/challenges/edit/:id"
+  element={
+    <ProtectedRoute>
+      <EditChallenge />
     </ProtectedRoute>
   }
 />

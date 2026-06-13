@@ -1,14 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { apiGetChallenges, apiGetChallenge, apiSubmitChallenge, apiVoteSubmission, apiGetMyAnalyses } from '../../services/api.js';
+import {
+  apiGetChallenges,
+  apiGetChallenge,
+  apiGetChallengeResults,
+  apiSubmitChallenge,
+  apiVoteSubmission,
+ apiGetMyAnalyses,
+apiDeleteSubmission,
+} from '../../services/api.js';
 import { useAuth } from '../../store/AuthContext.jsx';
 import './Challenges.css';
 
 function ChallengeCard({ challenge, onClick }) {
-  const now = new Date();
-  const end = new Date(challenge.end_date);
-  const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+ const now = new Date();
+const end = new Date(challenge.end_date);
 
+const isEnded = end < now;
+
+const daysLeft = isEnded
+  ? 0
+  : Math.ceil(
+      (end - now) / (1000 * 60 * 60 * 24)
+    );
   return (
     <div className="challenge-card" onClick={onClick}>
       <div className="challenge-card-banner">
@@ -26,7 +40,13 @@ function ChallengeCard({ challenge, onClick }) {
 </div>
       <div className="challenge-card-top">
         <span className="challenge-theme">{challenge.theme || 'Open'}</span>
-        <span className={`challenge-days${daysLeft < 3 ? ' urgent' : ''}`}>{daysLeft}d left</span>
+        <span
+  className={`challenge-days${
+    !isEnded && daysLeft < 3 ? ' urgent' : ''
+  }`}
+>
+  {isEnded ? 'Ended' : `${daysLeft}d left`}
+</span>
       </div>
       <h3 className="challenge-card-title">{challenge.title}</h3>
       <p className="challenge-card-desc">{challenge.description}</p>
@@ -44,11 +64,13 @@ export default function Challenges() {
   const [challenges, setChallenges] = useState([]);
   const [active, setActive] = useState(null);
   const [myAnalyses, setMyAnalyses] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedAnalysisId, setSelectedAnalysisId] = useState('');
   const [note, setNote] = useState('');
   const [showSubmitForm, setShowSubmitForm] = useState(false);
+  const [tab, setTab] = useState('active');
 
   useEffect(() => {
     Promise.all([
@@ -61,9 +83,19 @@ export default function Challenges() {
   }, [user]);
 
   const openChallenge = async (c) => {
-    const data = await apiGetChallenge(c.id);
-    setActive(data);
-  };
+  const data = await apiGetChallenge(c.id);
+
+  setActive(data);
+
+  if (new Date(c.end_date) < new Date()) {
+    const winners =
+      await apiGetChallengeResults(c.id);
+
+    setResults(winners);
+  } else {
+    setResults([]);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,6 +122,13 @@ export default function Challenges() {
     }));
   };
 
+  const filteredChallenges = challenges.filter(c => {
+  const ended = new Date(c.end_date) < new Date();
+
+  return tab === 'active'
+    ? !ended
+    : ended;
+});
   if (loading) return <div className="ch-loading"><div className="spinner"/></div>;
 
   return (
@@ -98,14 +137,37 @@ export default function Challenges() {
         {!active ? (
           <>
             <div className="ch-header">
-              <h1 className="ch-title">Weekly Challenges</h1>
-              <p className="ch-sub">Put your composition skills to the test. Submit a shot, earn votes, climb the rankings.</p>
-            </div>
-            {challenges.length === 0 ? (
-              <p className="ch-empty">No active challenges right now. Check back soon!</p>
+  <h1 className="ch-title">Weekly Challenges</h1>
+
+  <p className="ch-sub">
+    Put your composition skills to the test. Submit a shot, earn votes, climb the rankings.
+  </p>
+
+  <div className="ch-tabs">
+    <button
+      className={tab === 'active' ? 'active' : ''}
+      onClick={() => setTab('active')}
+    >
+      Active
+    </button>
+
+    <button
+      className={tab === 'ended' ? 'active' : ''}
+      onClick={() => setTab('ended')}
+    >
+      Ended
+    </button>
+  </div>
+</div>
+            {filteredChallenges.length === 0 ? (
+              <p className="ch-empty">
+  {tab === 'active'
+    ? 'No active challenges right now. Check back soon!'
+    : 'No ended challenges yet.'}
+</p>
             ) : (
               <div className="ch-grid">
-                {challenges.map(c => <ChallengeCard key={c.id} challenge={c} onClick={() => openChallenge(c)}/>)}
+                {filteredChallenges.map(c => <ChallengeCard key={c.id} challenge={c} onClick={() => openChallenge(c)}/>)}
               </div>
             )}
           </>
@@ -140,6 +202,41 @@ export default function Challenges() {
               </form>
             )}
 
+            {results.length > 0 && (
+  <div className="challenge-results">
+
+    <h2>
+      🏆 Final Results
+    </h2>
+
+    {results.map((r, index) => (
+      <div
+        key={index}
+        className="winner-card"
+      >
+        <h3>
+          {index === 0
+            ? '🥇'
+            : index === 1
+            ? '🥈'
+            : '🥉'}
+          {' '}
+          @{r.username}
+        </h3>
+
+        <img
+          src={r.image_url}
+          alt=""
+        />
+
+        <p>
+          {r.vote_count} votes
+        </p>
+      </div>
+    ))}
+  </div>
+)}
+
             <div className="ch-submissions">
               <h3 className="ch-submissions-title">Submissions — {active.submissions.length} entries</h3>
               <div className="ch-submissions-grid">
@@ -156,13 +253,50 @@ export default function Challenges() {
                         <span className="ch-sub-score">{sub.overall_score}</span>
                       </div>
                       {sub.note && <p className="ch-sub-note">{sub.note}</p>}
-                      <button
-                        className={`ch-vote-btn${sub.has_voted ? ' voted' : ''}`}
-                        onClick={() => user && handleVote(sub.id)}
-                        disabled={!user}
-                      >
-                        ♥ {sub.vote_count}
-                      </button>
+                     <button
+  className={`ch-vote-btn${sub.has_voted ? ' voted' : ''}`}
+  onClick={() => user && handleVote(sub.id)}
+  disabled={!user}
+>
+  ♥ {sub.vote_count}
+</button>
+
+{sub.username === user?.username && (
+  <button
+    onClick={async () => {
+      if (!window.confirm('Remove your submission?'))
+        return;
+
+      await apiDeleteSubmission(sub.id);
+
+      const data = await apiGetChallenge(
+        active.challenge.id
+      );
+
+      setActive(data);
+    }}
+    style={{
+      background: '#dc2626',
+      color: 'white',
+      border: 'none',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      marginTop: '10px',
+      width: '100%'
+    }}
+  >
+    Remove Submission
+  </button>
+)}
+                      {sub.user_id === user?.id && (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => apiDeleteSubmission(sub.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

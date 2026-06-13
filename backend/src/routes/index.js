@@ -6,6 +6,7 @@ import * as analysis from '../controllers/analysisController.js';
 import * as social from '../controllers/socialController.js';
 import * as challenge from '../controllers/challengeController.js';
 import * as sequence from '../controllers/sequenceController.js';
+import * as admin from '../controllers/adminController.js';
 
 const router = Router();
 
@@ -72,12 +73,24 @@ router.get(
   requireAdmin,
   challenge.getAllChallengesAdmin
 );
+router.get(
+  '/admin/analytics',
+  authenticate,
+  requireAdmin,
+  admin.getAnalytics
+);
 router.post('/challenges', authenticate, requireAdmin, challenge.createChallenge);
 router.delete(
   '/challenges/:id',
   authenticate,
   requireAdmin,
   challenge.deleteChallenge
+);
+router.put(
+  '/challenges/:id',
+  authenticate,
+  requireAdmin,
+  challenge.updateChallenge
 );
 router.post(
   '/challenges/banner',
@@ -86,9 +99,19 @@ router.post(
   upload.single('banner'),
   challenge.uploadChallengeBanner
 );
+router.get(
+  '/challenges/:id/results',
+  optionalAuth,
+  challenge.getChallengeResults
+);
 router.get('/challenges/:id', optionalAuth, challenge.getChallenge);
 router.post('/challenges/:id/submit', authenticate, challenge.submitToChallenge);
 router.post('/challenge-submissions/:submissionId/vote', authenticate, challenge.voteSubmission);
+router.delete(
+  '/challenge-submissions/:submissionId',
+  authenticate,
+  challenge.deleteSubmission
+);
 
 // ── Sequences (storyboard) ─────────────────────────────
 router.post('/sequences', authenticate, sequence.createSequence);
