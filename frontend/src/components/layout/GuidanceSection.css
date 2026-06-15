@@ -2,7 +2,8 @@
 
 .guidance-mosaic {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns:
+repeat(auto-fit, minmax(280px, 1fr));
   gap: 2px;
   background: var(--border-hairline);
   border-radius: var(--radius-lg);
@@ -69,7 +70,8 @@
 .guidance-card--weak { border-top: 1px solid rgba(232,184,75,0.2); }
 
 @media (max-width: 968px) {
-  .guidance-mosaic { grid-template-columns: repeat(2, 1fr); }
+  .guidance-mosaic { grid-template-columns:
+repeat(auto-fit, minmax(280px, 1fr)); }
 }
 @media (max-width: 580px) {
   .guidance-mosaic { grid-template-columns: 1fr; }

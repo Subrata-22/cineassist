@@ -1,0 +1,24 @@
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent horizontal scrolling */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Universal box sizing */
+* {
+  box-sizing: border-box;
+}
+
+/* Responsive containers */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

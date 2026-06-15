@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search,
-  BellDot
+  BellDot,
+  Menu,
+  X,
+  House,
+  User
 } from 'lucide-react';
 import { useAuth } from '../../store/AuthContext.jsx';
 import {
@@ -21,6 +25,7 @@ export default function Navbar({ onAuthClick, fileInputRef }) {
 const [results, setResults] =
   useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
   const navigate = useNavigate();
   const handleLogout = () => {
   logout();
@@ -107,8 +112,10 @@ useEffect(() => {
   {searchOpen && (
     <div className="nav-search">
       <input
-        type="text"
-        placeholder="Search users..."
+  className="nav-search-input"
+  autoFocus
+  type="text"
+  placeholder="Search creators..."
         value={search}
         onChange={async (e) => {
           const value = e.target.value;
@@ -149,6 +156,41 @@ useEffect(() => {
 </div>
 
         <div className="nav-right">
+
+          <Link
+  to="/"
+  className="mobile-nav-icon"
+>
+  <House size={18}/>
+</Link>
+
+{user && (
+  <>
+    <Link
+      to="/notifications"
+      className="mobile-nav-icon"
+    >
+      <BellDot size={18}/>
+    </Link>
+
+    <Link
+      to={`/user/${user.username}`}
+      className="mobile-nav-icon"
+    >
+      <User size={18}/>
+    </Link>
+  </>
+)}
+
+<button
+  className="mobile-menu-btn"
+  onClick={() =>
+    setMobileMenu(!mobileMenu)
+  }
+>
+  {mobileMenu ? <X size={20}/> : <Menu size={20}/>}
+</button>
+
           <button className="nav-cta" onClick={handleAnalyze}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -226,6 +268,72 @@ useEffect(() => {
           )}
         </div>
       </div>
+      {mobileMenu && (
+  <div className="mobile-menu">
+
+
+    <Link
+      to="/explore"
+      onClick={() => setMobileMenu(false)}
+    >
+      Explore
+    </Link>
+
+    <Link
+      to="/challenges"
+      onClick={() => setMobileMenu(false)}
+    >
+      Challenges
+    </Link>
+
+    {user && (
+      <>
+        
+        <Link
+          to="/dashboard"
+          onClick={() => setMobileMenu(false)}
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          to="/compare"
+          onClick={() => setMobileMenu(false)}
+        >
+          Compare
+        </Link>
+
+        <Link
+          to="/storyboard"
+          onClick={() => setMobileMenu(false)}
+        >
+          Storyboard
+        </Link>
+
+        <button
+          onClick={() => {
+            handleLogout();
+            setMobileMenu(false);
+          }}
+        >
+          Logout
+        </button>
+      </>
+    )}
+
+    {!user && (
+      <button
+        onClick={() => {
+          navigate('/login');
+          setMobileMenu(false);
+        }}
+      >
+        Sign In
+      </button>
+    )}
+
+  </div>
+)}
     </nav>
   );
 }

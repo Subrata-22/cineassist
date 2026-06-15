@@ -123,37 +123,59 @@ export const googleLogin = async (req, res, next) => {
     let user;
 
     if (result.rows.length === 0) {
-      const username =
-        payload.email.split('@')[0].toLowerCase();
 
-      const newUser = await query(
-        `
-        INSERT INTO users
-        (
-          username,
-          email,
-          avatar_url
-        )
-        VALUES ($1,$2,$3)
-        RETURNING
-        id,
-        username,
-        email,
-        avatar_url,
-        bio,
-        role
-        `,
-        [
-          username,
-          email,
-          payload.picture
-        ]
-      );
+  const username =
+    payload.email.split('@')[0].toLowerCase();
 
-      user = newUser.rows[0];
-    } else {
-      user = result.rows[0];
-    }
+  const newUser = await query(
+    `
+    INSERT INTO users
+    (
+      username,
+      email,
+      avatar_url
+    )
+    VALUES ($1,$2,$3)
+    RETURNING
+    id,
+    username,
+    email,
+    avatar_url,
+    bio,
+    role
+    `,
+    [
+      username,
+      email,
+      payload.picture
+    ]
+  );
+
+  user = newUser.rows[0];
+
+} else {
+
+  const updatedUser = await query(
+    `
+    UPDATE users
+    SET avatar_url = COALESCE(avatar_url, $1)
+    WHERE email = $2
+    RETURNING
+    id,
+    username,
+    email,
+    avatar_url,
+    bio,
+    role
+    `,
+    [
+      payload.picture,
+      email
+    ]
+  );
+
+  user = updatedUser.rows[0];
+}
 
     const token = signToken(user.id);
 

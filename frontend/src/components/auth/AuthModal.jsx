@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../../store/AuthContext.jsx';
 import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 import './AuthModal.css';
 
 export default function AuthModal({ onClose }) {
@@ -8,6 +10,7 @@ export default function AuthModal({ onClose }) {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const {
   login,
   register,
@@ -36,7 +39,12 @@ export default function AuthModal({ onClose }) {
   return (
     <div className="auth-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="auth-modal">
-        <button className="auth-close" onClick={onClose}>✕</button>
+        <button
+  className="auth-close"
+  onClick={() => navigate('/')}
+>
+  <X size={20} />
+</button>
 
         <div className="auth-logo">
           <svg viewBox="0 0 32 32" width="28" height="28">
