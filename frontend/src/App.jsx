@@ -189,6 +189,11 @@ function AppInner() {
   setShowAuth={setShowAuth}
   fileInputRef={fileInputRef}
 />
+{showAuth && (
+  <AuthModal
+    onClose={() => setShowAuth(false)}
+  />
+)}
     </BrowserRouter>
   );
 }

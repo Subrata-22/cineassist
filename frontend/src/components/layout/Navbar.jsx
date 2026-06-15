@@ -217,7 +217,12 @@ useEffect(() => {
 
   </div>
 ) : (
-            <button className="nav-signin" onClick={onAuthClick}>Sign In</button>
+            <button
+    className="nav-signin"
+    onClick={() => navigate('/login')}
+  >
+    Sign In
+  </button>
           )}
         </div>
       </div>
