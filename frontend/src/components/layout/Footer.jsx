@@ -20,7 +20,6 @@ export default function Footer() {
           <Link to="/storyboard">Storyboard</Link>
         </nav>
         <p className="footer-copy">All analysis runs in your browser. No images stored without your consent.</p>
-        <p className="footer-license">Apache 2.0 · Built with React + Node.js + Claude Vision API</p>
       </div>
     </footer>
   );
