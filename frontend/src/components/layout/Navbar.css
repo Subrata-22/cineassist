@@ -72,3 +72,90 @@
   color: var(--accent-primary);
   border-color: var(--accent-primary);
 }
+.nav-search {
+  position: relative;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 260px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.search-dropdown a {
+  display: block;
+  padding: 12px;
+  color: white;
+  text-decoration: none;
+}
+
+.search-dropdown a:hover {
+  background: rgba(255,255,255,.05);
+}
+.nav-search-wrapper {
+  position: relative;
+}
+
+.nav-search-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: var(--accent-primary);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.nav-search-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #f5b942;
+}
+
+.nav-search-btn:hover svg {
+  stroke: #ffd66b;
+}
+
+.nav-search-btn:hover {
+  transform: scale(1.08);
+}
+
+.nav-search-btn:hover svg {
+  stroke: #ffd66b !important;
+}
+
+.nav-search {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 240px;
+}
+
+.search-dropdown {
+  margin-top: 6px;
+  background: rgba(20,20,20,.95);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.search-dropdown a {
+  display: block;
+  padding: 10px 14px;
+  color: white;
+  text-decoration: none;
+}
+
+.search-dropdown a:hover {
+  background: rgba(255,255,255,.06);
+}

@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Search,
+  BellDot
+} from 'lucide-react';
 import { useAuth } from '../../store/AuthContext.jsx';
-import { apiGetNotifications } from '../../services/api.js';
+import {
+  apiGetNotifications,
+  apiSearchUsers
+} from '../../services/api.js';
 import './Navbar.css';
 
 export default function Navbar({ onAuthClick, fileInputRef }) {
@@ -9,7 +16,16 @@ export default function Navbar({ onAuthClick, fileInputRef }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [search, setSearch] =
+  useState('');
+const [results, setResults] =
+  useState([]);
+  const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
+  const handleLogout = () => {
+  logout();
+  navigate('/login', { replace: true });
+};
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 80);
@@ -33,7 +49,7 @@ useEffect(() => {
 
   loadNotifications();
 
-  const interval = setInterval(loadNotifications, 10000);
+  const interval = setInterval(loadNotifications, 30000);
 
   return () => clearInterval(interval);
 }, [user]);
@@ -70,6 +86,68 @@ useEffect(() => {
           </>}
         </ul>
 
+        <div className="nav-search-wrapper">
+  <button
+    className="nav-search-btn"
+    onClick={() => {
+      setSearchOpen(!searchOpen);
+
+      if (searchOpen) {
+        setSearch('');
+        setResults([]);
+      }
+    }}
+  >
+    <Search
+  size={18}
+  strokeWidth={2}
+/>
+  </button>
+
+  {searchOpen && (
+    <div className="nav-search">
+      <input
+        type="text"
+        placeholder="Search users..."
+        value={search}
+        onChange={async (e) => {
+          const value = e.target.value;
+
+          setSearch(value);
+
+          if (!value.trim()) {
+            setResults([]);
+            return;
+          }
+
+          const users =
+            await apiSearchUsers(value);
+
+          setResults(users);
+        }}
+      />
+
+      {results.length > 0 && (
+        <div className="search-dropdown">
+          {results.map(user => (
+            <Link
+              key={user.id}
+              to={`/user/${user.username}`}
+              onClick={() => {
+                setSearch('');
+                setResults([]);
+                setSearchOpen(false);
+              }}
+            >
+              @{user.username}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
         <div className="nav-right">
           <button className="nav-cta" onClick={handleAnalyze}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -88,7 +166,7 @@ useEffect(() => {
   className="nav-notification"
   title="Notifications"
 >
-  🔔
+  <BellDot size={18} />
 
   {unreadCount > 0 && (
     <span className="notification-badge">
@@ -133,7 +211,7 @@ useEffect(() => {
   )}
 </Link>
 
-    <button className="nav-logout" onClick={logout} title="Sign out">
+    <button className="nav-logout" onClick={handleLogout} title="Sign out">
       ⏻
     </button>
 

@@ -91,6 +91,10 @@ console.log(savedAnalysis);
 
 setAiVisionData(savedAnalysis.aiVisionData);
 setSaved(true);
+
+window.dispatchEvent(
+  new CustomEvent('analysis-created')
+);
     } catch (e) {
       setSaveError(e.message);
     } finally {

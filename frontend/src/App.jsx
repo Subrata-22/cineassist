@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation
+} from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/AuthContext.jsx';
 import { useState, useRef } from 'react';
 
@@ -23,18 +29,153 @@ import AdminChallenges from './components/admin/AdminChallenges';
 import EditChallenge from './components/admin/EditChallenge';
 import AdminAnalytics from './components/admin/AdminAnalytics';
 import AuthModal from './components/auth/AuthModal.jsx';
+import Login from './components/auth/Login.jsx';
+import Register from './components/auth/Register.jsx';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  const [showAuth, setShowAuth] = useState(false);
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}><div className="spinner"/></div>;
-  if (!user) return (
+ if (!user) {
+  return <Navigate to="/login" replace />;
+}
+  return children;
+}
+
+function Layout({ showAuth, setShowAuth, fileInputRef }) {
+  const location = useLocation();
+
+  const hideLayout =
+    location.pathname === '/login' ||
+    location.pathname === '/register';
+
+  return (
     <>
-      <Navigate to="/" replace/>
-      <AuthModal onClose={() => {}}/>
+      {!hideLayout && (
+        <Navbar
+          onAuthClick={() => setShowAuth(true)}
+          fileInputRef={fileInputRef}
+        />
+      )}
+
+      <Routes>
+         <Route
+    path="/"
+    element={
+      <HomePage
+        onAuthClick={() => setShowAuth(true)}
+        fileInputRef={fileInputRef}
+      />
+    }
+  />
+
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} />
+
+  <Route path="/explore" element={<Explore />} />
+  <Route path="/challenges" element={<Challenges />} />
+  <Route path="/analysis/:id" element={<AnalysisDetail />} />
+
+  <Route
+    path="/user/:username"
+    element={<UserProfile />}
+  />
+
+  <Route
+    path="/user/:username/:type"
+    element={<FollowList />}
+  />
+
+  <Route
+    path="/dashboard"
+    element={
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/admin/challenges/create"
+    element={
+      <ProtectedRoute>
+        <CreateChallenge />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/admin/challenges"
+    element={
+      <ProtectedRoute>
+        <AdminChallenges />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/admin/analytics"
+    element={
+      <ProtectedRoute>
+        <AdminAnalytics />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/admin/challenges/edit/:id"
+    element={
+      <ProtectedRoute>
+        <EditChallenge />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/settings"
+    element={
+      <ProtectedRoute>
+        <EditProfile />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/notifications"
+    element={
+      <ProtectedRoute>
+        <Notifications />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/compare"
+    element={
+      <ProtectedRoute>
+        <Compare />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/storyboard"
+    element={
+      <ProtectedRoute>
+        <Storyboard />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="*"
+    element={<Navigate to="/" replace />}
+  />
+        
+      </Routes>
+
+      {!hideLayout && <Footer />}
     </>
   );
-  return children;
 }
 
 function AppInner() {
@@ -43,71 +184,11 @@ function AppInner() {
 
   return (
     <BrowserRouter>
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)}/>}
-      <Navbar onAuthClick={() => setShowAuth(true)} fileInputRef={fileInputRef}/>
-      <Routes>
-        <Route path="/" element={<HomePage onAuthClick={() => setShowAuth(true)} fileInputRef={fileInputRef}/>}/>
-        <Route path="/explore" element={<Explore/>}/>
-        <Route path="/challenges" element={<Challenges/>}/>
-        <Route path="/analysis/:id" element={<AnalysisDetail/>}/>
-        <Route path="/user/:username" element={<UserProfile/>}/>
-        <Route
-  path="/user/:username/:type"
-  element={<FollowList/>}
+      <Layout
+  showAuth={showAuth}
+  setShowAuth={setShowAuth}
+  fileInputRef={fileInputRef}
 />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
-        <Route
-  path="/admin/challenges/create"
-  element={
-    <ProtectedRoute>
-      <CreateChallenge />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/admin/challenges"
-  element={
-    <ProtectedRoute>
-      <AdminChallenges />
-    </ProtectedRoute>
-  }
-/><Route
-  path="/admin/analytics"
-  element={
-    <ProtectedRoute>
-      <AdminAnalytics />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/admin/challenges/edit/:id"
-  element={
-    <ProtectedRoute>
-      <EditChallenge />
-    </ProtectedRoute>
-  }
-/>
-        <Route
-  path="/settings"
-  element={
-    <ProtectedRoute>
-      <EditProfile />
-    </ProtectedRoute>
-  }
-/>
-        <Route
-  path="/notifications"
-  element={
-    <ProtectedRoute>
-      <Notifications/>
-    </ProtectedRoute>
-  }
-/>
-        <Route path="/compare" element={<ProtectedRoute><Compare/></ProtectedRoute>}/>
-        <Route path="/storyboard" element={<ProtectedRoute><Storyboard/></ProtectedRoute>}/>
-        <Route path="*" element={<Navigate to="/" replace/>}/>
-      </Routes>
-      <Footer/>
     </BrowserRouter>
   );
 }

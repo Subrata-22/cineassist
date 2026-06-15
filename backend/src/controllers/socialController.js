@@ -38,6 +38,32 @@ export const addComment = async (req, res, next) => {
       [analysisId, req.user.id, content.trim(), parent_id || null]
     );
 
+    if (parent_id) {
+  const parentComment = await query(
+    `
+    SELECT user_id
+    FROM comments
+    WHERE id = $1
+    `,
+    [parent_id]
+  );
+
+  if (
+    parentComment.rows[0] &&
+    parentComment.rows[0].user_id !== req.user.id
+  ) {
+    await createNotification({
+      userId:
+        parentComment.rows[0].user_id,
+      actorId: req.user.id,
+      analysisId,
+      type: 'reply',
+      message:
+        `${req.user.username} replied to your comment`
+    });
+  }
+}
+
     // Create notification for analysis owner
 if (analysis.rows[0].user_id !== req.user.id) {
   await createNotification({
@@ -106,6 +132,36 @@ console.log('NOTIFICATION CREATED');
   } catch (err) { next(err); }
 };
 
+export const searchUsers = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { q = '' } = req.query;
+
+    const result = await query(
+      `
+      SELECT
+        id,
+        username,
+        avatar_url
+      FROM users
+      WHERE
+        username ILIKE $1
+        AND is_active = true
+      ORDER BY username
+      LIMIT 20
+      `,
+      [`%${q}%`]
+    );
+
+    res.json(result.rows);
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 // ── User profile ──────────────────────────────────────
 export const getUserProfile = async (req, res, next) => {

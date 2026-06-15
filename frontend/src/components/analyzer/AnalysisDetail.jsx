@@ -23,6 +23,11 @@ export default function AnalysisDetail() {
   const [analysis, setAnalysis] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] =
+  useState(null);
+
+const [replyText, setReplyText] =
+  useState('');
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [activeTab, setActiveTab] = useState('feedback');
@@ -55,6 +60,26 @@ export default function AnalysisDetail() {
     setComments(prev => [...prev, c]);
     setNewComment('');
   };
+
+  const handleReply = async (
+  commentId
+) => {
+  if (!replyText.trim()) return;
+
+  const reply =
+    await apiAddComment(id, {
+      content: replyText,
+      parent_id: commentId
+    });
+
+  setComments(prev => [
+    ...prev,
+    reply
+  ]);
+
+  setReplyText('');
+  setReplyingTo(null);
+};
 
   const handleDeleteComment = async (cid) => {
     await apiDeleteComment(cid);
@@ -245,7 +270,9 @@ export default function AnalysisDetail() {
                   <p className="no-comments">No comments yet. Be the first!</p>
                 ) : (
                   <div className="comments-list">
-                    {comments.map(c => (
+                    {comments
+  .filter(c => !c.parent_id)
+  .map(c => (
                       <div key={c.id} className="comment-item">
                         <div className="user-avatar comment-avatar">{c.username[0].toUpperCase()}</div>
                         <div className="comment-body">
@@ -254,6 +281,90 @@ export default function AnalysisDetail() {
                             <span className="comment-date">{new Date(c.created_at).toLocaleDateString()}</span>
                           </div>
                           <p className="comment-text">{c.content}</p>
+                          {comments
+  .filter(r => r.parent_id === c.id)
+  .map(reply => (
+    <div
+      key={reply.id}
+      style={{
+        marginLeft: '40px',
+        marginTop: '12px',
+        borderLeft:
+          '2px solid rgba(255,255,255,.15)',
+        paddingLeft: '12px'
+      }}
+    >
+      <div
+  style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
+  }}
+>
+  <div>
+    <strong>@{reply.username}</strong>
+
+    <p
+      style={{
+        marginTop: '4px',
+        opacity: 0.9
+      }}
+    >
+      {reply.content}
+    </p>
+  </div>
+
+  {(user?.id === reply.user_id ||
+    user?.role === 'admin') && (
+    <button
+      type="button"
+      className="comment-delete"
+      onClick={() =>
+        handleDeleteComment(reply.id)
+      }
+    >
+      ✕
+    </button>
+  )}
+</div>
+    </div>
+  ))}
+                          <button
+  type="button"
+  className="comment-reply"
+  onClick={() => setReplyingTo(c.id)}
+>
+  Reply
+</button>
+{replyingTo === c.id && (
+  <div
+    style={{
+      marginTop: '10px'
+    }}
+  >
+    <textarea
+      value={replyText}
+      onChange={(e) =>
+        setReplyText(
+          e.target.value
+        )
+      }
+      rows={2}
+      style={{
+        width: '100%',
+        marginBottom: '8px'
+      }}
+    />
+
+   <button
+  type="button"
+  onClick={() => handleReply(c.id)}
+  className="btn btn-primary btn-sm"
+>
+      Post Reply
+    </button>
+  </div>
+)}
                         </div>
                         {(user?.id === c.user_id || user?.role === 'admin') && (
                           <button className="comment-delete" onClick={() => handleDeleteComment(c.id)}>✕</button>

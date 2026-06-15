@@ -6,6 +6,26 @@ const model = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash'
 });
 
+const handleGeminiError = (err) => {
+  console.error('GEMINI ERROR:', err);
+
+  if (
+    err.status === 429 ||
+    err.code === 429
+  ) {
+    throw new Error('QUOTA_EXCEEDED');
+  }
+
+  if (
+    err.status === 503 ||
+    err.code === 503
+  ) {
+    throw new Error('SERVICE_BUSY');
+  }
+
+  throw err;
+};
+
 const imageUrlToBase64 = async (imageUrl) => {
   const response = await axios.get(imageUrl, {
     responseType: 'arraybuffer'
@@ -17,7 +37,10 @@ const imageUrlToBase64 = async (imageUrl) => {
 export const analyzePhotoWithAI = async (imageUrl) => {
   const imageBase64 = await imageUrlToBase64(imageUrl);
 
-  const result = await model.generateContent([
+  let result;
+
+try {
+  result = await model.generateContent([
     {
       inlineData: {
         mimeType: "image/jpeg",
@@ -54,6 +77,9 @@ Respond ONLY in JSON:
   }
 
   return JSON.parse(jsonMatch[0]);
+  } catch (err) {
+  handleGeminiError(err);
+}
 };
 
 /**
@@ -66,7 +92,10 @@ export const getAIFeedback = async (imageUrl, moduleResults) => {
 
 const imageBase64 = await imageUrlToBase64(imageUrl);
 
-const result = await model.generateContent([
+let result;
+
+try {
+  result = await model.generateContent([
   {
     inlineData: {
       mimeType: "image/jpeg",
@@ -93,6 +122,9 @@ Respond ONLY in valid JSON:
   "suggestions": ["...", "...", "..."]
 }`
 ]);
+} catch (err) {
+  handleGeminiError(err);
+}
 
 const text = result.response.text();
 
@@ -107,7 +139,10 @@ const text = result.response.text();
 export const getRecompositionSuggestion = async (imageUrl, imageWidth, imageHeight) => {
   const imageBase64 = await imageUrlToBase64(imageUrl);
 
-  const result = await model.generateContent([
+  let result;
+
+try {
+  result = await model.generateContent([
     {
       inlineData: {
         mimeType: "image/jpeg",
@@ -127,7 +162,10 @@ Respond ONLY in valid JSON:
   "height": 0.8,
   "reason": "..."
 }`
-  ]);
+ ]);
+} catch (err) {
+  handleGeminiError(err);
+}
 
   const text = result.response.text();
 
@@ -147,7 +185,10 @@ export const compareShots = async (imageUrlA, imageUrlB) => {
   const imageABase64 = await imageUrlToBase64(imageUrlA);
   const imageBBase64 = await imageUrlToBase64(imageUrlB);
 
-  const result = await model.generateContent([
+  let result;
+
+try {
+  result = await model.generateContent([
     {
       inlineData: {
         mimeType: 'image/jpeg',
@@ -172,6 +213,9 @@ Respond ONLY in valid JSON:
   "recommendation": "..."
 }`
   ]);
+  } catch (err) {
+  handleGeminiError(err);
+}
 
   const text = result.response.text();
 

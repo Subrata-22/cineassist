@@ -13,6 +13,7 @@ const router = Router();
 // ── Auth ───────────────────────────────────────────────
 router.post('/auth/register', auth.register);
 router.post('/auth/login', auth.login);
+router.post('/auth/google', auth.googleLogin);
 router.get('/auth/me', authenticate, auth.getMe);
 router.patch('/auth/profile', authenticate, auth.updateProfile);
 router.post(
@@ -49,6 +50,11 @@ router.delete('/comments/:commentId', authenticate, social.deleteComment);
 router.post('/users/:userId/follow', authenticate, social.followUser);
 router.get('/users/:userId/followers', optionalAuth, social.getFollowers);
 router.get('/users/:userId/following', optionalAuth, social.getFollowing);
+router.get(
+  '/users/search',
+  optionalAuth,
+  social.searchUsers
+);
 router.get('/users/:username/profile', optionalAuth, social.getUserProfile);
 router.get('/users/:username/analyses', optionalAuth, social.getUserAnalyses);
 router.get('/social/feed', authenticate, social.getFollowingFeed);

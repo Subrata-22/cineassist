@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAuth } from '../../store/AuthContext.jsx';
@@ -28,45 +28,70 @@ const ScoreRing = ({ score }) => {
 };
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [analyses, setAnalyses] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sort, setSort] = useState('newest');
+ const loadDashboard = useCallback(async () => {
+  const [data, hist] = await Promise.all([
+    apiGetMyAnalyses({ page, sort }),
+    apiGetScoreHistory(30)
+  ]);
+
+  setAnalyses(data.analyses);
+  setTotalPages(data.pages);
+
+  setHistory(
+    hist.map(h => ({
+      ...h,
+      date: new Date(h.recorded_at)
+        .toLocaleDateString('en', {
+          month: 'short',
+          day: 'numeric'
+        })
+    }))
+  );
+
+  await refreshUser();
+}, [page, sort, refreshUser]);
 
   useEffect(() => {
-    Promise.all([
-      apiGetMyAnalyses({ page, sort }),
-      apiGetScoreHistory(30),
-    ]).then(([data, hist]) => {
-      setAnalyses(data.analyses);
-      setTotalPages(data.pages);
-      setHistory(hist.map(h => ({
-        ...h,
-        date: new Date(h.recorded_at).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
-      })));
-    }).finally(() => setLoading(false));
-  }, [page, sort]);
+  loadDashboard()
+    .finally(() => setLoading(false));
+}, [loadDashboard]);
+
+useEffect(() => {
+  const refreshDashboard = () => {
+    loadDashboard();
+  };
+
+  window.addEventListener(
+    'analysis-created',
+    refreshDashboard
+  );
+
+  return () => {
+    window.removeEventListener(
+      'analysis-created',
+      refreshDashboard
+    );
+  };
+}, [loadDashboard]);
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this analysis?')) return;
     await apiDeleteAnalysis(id);
-    setAnalyses(a => a.filter(x => x.id !== id));
+   await loadDashboard();
   };
 
   const handleToggleVisibility = async (id, currentState) => {
   try {
     await apiToggleVisibility(id, !currentState);
 
-    setAnalyses(prev =>
-      prev.map(a =>
-        a.id === id
-          ? { ...a, is_public: !currentState }
-          : a
-      )
-    );
+   await loadDashboard();
   } catch (err) {
     console.error(err);
     alert('Failed to update visibility');
@@ -81,13 +106,7 @@ const handleRename = async (id, currentTitle) => {
   try {
     await apiRenameAnalysis(id, newTitle);
 
-    setAnalyses(prev =>
-      prev.map(a =>
-        a.id === id
-          ? { ...a, title: newTitle }
-          : a
-      )
-    );
+   await loadDashboard();
   } catch (err) {
     console.error(err);
     alert('Failed to rename analysis');
@@ -124,9 +143,10 @@ const handleDeleteAccount = async () => {
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">My Portfolio</h1>
-            <p className="dashboard-sub">
-              {user.analysis_count} shot{user.analysis_count !== 1 ? 's' : ''} analyzed
-            </p>
+           <p className="dashboard-sub">
+  {user?.analysis_count || 0} shot
+  {(user?.analysis_count || 0) !== 1 ? 's' : ''} analyzed
+</p>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
   <Link to="/analyze" className="btn btn-primary btn-sm">
@@ -150,9 +170,9 @@ const handleDeleteAccount = async () => {
         {/* Stats bar */}
         <div className="dash-stats">
           {[
-            { label: 'Total shots', value: user.analysis_count || 0 },
-            { label: 'Followers', value: user.follower_count || 0 },
-            { label: 'Following', value: user.following_count || 0 },
+           { label: 'Total shots', value: user?.analysis_count || 0 },
+  { label: 'Followers', value: user?.follower_count || 0 },
+  { label: 'Following', value: user?.following_count || 0 },
           ].map(s => (
             <div key={s.label} className="dash-stat">
               <span className="dash-stat-val">{s.value}</span>

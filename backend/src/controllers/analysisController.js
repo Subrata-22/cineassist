@@ -352,24 +352,17 @@ res.json({
   } catch (err) {
   console.error(err);
 
-  if (
-    err.message?.includes('503') ||
-    err.message?.includes('high demand') ||
-    err.message?.includes('Service Unavailable')
-  ) {
-    return res.status(503).json({
-      error: 'AI comparison service is currently busy. Please try again in a minute.'
-    });
-  }
+  if (err.message === 'SERVICE_BUSY') {
+  return res.status(503).json({
+    error: 'AI comparison service is currently busy. Please try again in a minute.'
+  });
+}
 
-  if (
-    err.message?.includes('429') ||
-    err.message?.includes('quota')
-  ) {
-    return res.status(429).json({
-      error: 'AI comparison quota exceeded. Please try again later.'
-    });
-  }
+if (err.message === 'QUOTA_EXCEEDED') {
+  return res.status(429).json({
+    error: 'AI comparison quota exceeded. Please try again later.'
+  });
+}
 
   return res.status(500).json({
     error: 'Failed to compare shots.'
@@ -489,21 +482,13 @@ export const renameAnalysis = async (req, res, next) => {
   console.error(err);
   console.log('ERROR MESSAGE:', err.message);
 
-  if (
-    err.message?.includes('429') ||
-    err.message?.includes('quota') ||
-    err.message?.includes('Too Many Requests')
-  ) {
-    return res.status(429).json({
-      error: 'AI review quota exceeded. Please try again later.'
-    });
-  }
+  if (err.message === 'QUOTA_EXCEEDED') {
+  return res.status(429).json({
+    error: 'AI review quota exceeded. Please try again later.'
+  });
+}
 
-  if (
-  err.message?.includes('503') ||
-  err.message?.includes('high demand') ||
-  err.message?.includes('Service Unavailable')
-) {
+ if (err.message === 'SERVICE_BUSY') {
   return res.status(503).json({
     error: 'AI review service is currently busy. Please try again in a minute.'
   });

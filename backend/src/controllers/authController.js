@@ -1,10 +1,14 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { query } from '../config/database.js';
 import { uploadImage } from '../config/cloudinary.js';
 
 const signToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
 
 export const register = async (req, res, next) => {
   try {
@@ -89,6 +93,74 @@ export const login = async (req, res, next) => {
     const { password_hash, ...userOut } = user;
     const token = signToken(user.id);
     res.json({ token, user: userOut });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+
+    const email = payload.email.toLowerCase();
+
+    let result = await query(
+      `
+      SELECT id, username, email, avatar_url, bio, role
+      FROM users
+      WHERE email = $1
+      `,
+      [email]
+    );
+
+    let user;
+
+    if (result.rows.length === 0) {
+      const username =
+        payload.email.split('@')[0].toLowerCase();
+
+      const newUser = await query(
+        `
+        INSERT INTO users
+        (
+          username,
+          email,
+          avatar_url
+        )
+        VALUES ($1,$2,$3)
+        RETURNING
+        id,
+        username,
+        email,
+        avatar_url,
+        bio,
+        role
+        `,
+        [
+          username,
+          email,
+          payload.picture
+        ]
+      );
+
+      user = newUser.rows[0];
+    } else {
+      user = result.rows[0];
+    }
+
+    const token = signToken(user.id);
+
+    res.json({
+      token,
+      user
+    });
   } catch (err) {
     next(err);
   }

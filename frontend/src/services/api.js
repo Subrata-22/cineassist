@@ -10,6 +10,14 @@ const getHeaders = () => {
 
 const handle = async (res) => {
   const data = await res.json();
+   if (res.status === 401) {
+    localStorage.removeItem('ca_token');
+
+    window.location.href = '/login';
+
+    throw new Error('Session expired');
+  }
+
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 };
@@ -20,6 +28,14 @@ export const apiRegister = (body) =>
 
 export const apiLogin = (body) =>
   fetch(`${BASE}/auth/login`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(body) }).then(handle);
+export const apiGoogleLogin = (credential) =>
+  fetch(`${BASE}/auth/google`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      credential
+    })
+  }).then(handle);
 
 export const apiGetMe = () =>
   fetch(`${BASE}/auth/me`, { headers: getHeaders() }).then(handle);
@@ -145,6 +161,16 @@ export const apiGetFollowing = (userId) =>
   fetch(`${BASE}/users/${userId}/following`, {
     headers: getHeaders(),
   }).then(handle);
+
+  export const apiSearchUsers = (
+  query
+) =>
+  fetch(
+    `${BASE}/users/search?q=${encodeURIComponent(query)}`,
+    {
+      headers: getHeaders()
+    }
+  ).then(handle);
 
 export const apiGetUserProfile = (username) =>
   fetch(`${BASE}/users/${username}/profile`, { headers: getHeaders() }).then(handle);

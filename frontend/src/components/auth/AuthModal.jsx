@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../store/AuthContext.jsx';
+import { GoogleLogin } from '@react-oauth/google';
 import './AuthModal.css';
 
 export default function AuthModal({ onClose }) {
@@ -7,7 +8,11 @@ export default function AuthModal({ onClose }) {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register } = useAuth();
+  const {
+  login,
+  register,
+  googleLogin
+} = useAuth();
 
   const handle = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -68,6 +73,34 @@ export default function AuthModal({ onClose }) {
           <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
             {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
+          <div
+  style={{
+    marginTop: '16px',
+    display: 'flex',
+    justifyContent: 'center'
+  }}
+>
+  <GoogleLogin
+  onSuccess={async (
+    credentialResponse
+  ) => {
+    try {
+      await googleLogin(
+        credentialResponse.credential
+      );
+
+      onClose?.();
+    } catch (err) {
+      alert(err.message);
+    }
+  }}
+  onError={() => {
+    alert(
+      'Google login failed'
+    );
+  }}
+/>
+</div>
         </form>
       </div>
     </div>

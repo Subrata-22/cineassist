@@ -6,7 +6,7 @@ import {
 import { useAuth } from '../../store/AuthContext.jsx';
 
 export default function EditProfile() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -20,6 +20,8 @@ const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '');
       bio
     });
 
+    await refreshUser();
+
     if (avatarFile) {
       const formData = new FormData();
       formData.append('avatar', avatarFile);
@@ -27,6 +29,8 @@ const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '');
       const result = await apiUploadAvatar(formData);
 
       setAvatarPreview(result.avatar_url);
+
+      await refreshUser();
     }
 
     alert('Profile updated successfully');
